@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const Objectid = require('mongodb').ObjectId;
 const port = process.env.PORT || 5000;
 require('dotenv').config();
 
@@ -21,12 +22,22 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 const run = async () => {
     try {
         await client.connect();
+
         app.get('/fruits', async (req, res) => {
             const fruitstore = client.db("fruitStore").collection("fruits");
             const query = {};
             const cursor = fruitstore.find(query);
             const result = await cursor.toArray();
 
+            res.send(result)
+
+        })
+
+        app.get('/fruit/:id', async (req, res) => {
+            const fruitstore = client.db("fruitStore").collection("fruits");
+            const id = req.params.id;
+            const query = { _id: Objectid(id) }
+            const result = await fruitstore.findOne(query);
             res.send(result)
 
         })
