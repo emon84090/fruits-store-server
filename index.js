@@ -8,7 +8,7 @@ require('dotenv').config();
 
 
 app.use(cors());
-app.use(express());
+app.use(express.json());
 
 
 app.get('/', (req, res) => {
@@ -38,6 +38,27 @@ const run = async () => {
             const id = req.params.id;
             const query = { _id: Objectid(id) }
             const result = await fruitstore.findOne(query);
+            res.send(result)
+
+        })
+
+        app.put('/updateqty', async (req, res) => {
+            const fruitstore = client.db("fruitStore").collection("fruits");
+            const id = req.body.id;
+            const quantity = parseInt(req.body.qty);
+            const exist_qty = parseInt(req.body.exist_qty);
+
+
+            const filter = { _id: Objectid(id) };
+
+            const options = { upsert: true };
+
+            const updateDoc = {
+                $set: {
+                    qty: quantity + exist_qty
+                },
+            };
+            const result = await fruitstore.updateOne(filter, updateDoc, options);
             res.send(result)
 
         })
