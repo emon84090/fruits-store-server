@@ -28,7 +28,6 @@ const run = async () => {
             const query = {};
             const cursor = fruitstore.find(query);
             const result = await cursor.toArray();
-
             res.send(result)
 
         })
@@ -59,6 +58,37 @@ const run = async () => {
                 },
             };
             const result = await fruitstore.updateOne(filter, updateDoc, options);
+            res.send(result)
+
+        })
+
+
+        app.put('/decreaseqty', async (req, res) => {
+            const fruitstore = client.db("fruitStore").collection("fruits");
+            const id = req.body.id;
+            const exist_qty = parseInt(req.body.exist_qty);
+
+            const filter = { _id: Objectid(id) };
+
+            const options = { upsert: true };
+
+            const updateDoc = {
+                $set: {
+                    qty: exist_qty - 1,
+                },
+            };
+            const result = await fruitstore.updateOne(filter, updateDoc, options);
+            res.send(result)
+
+        })
+
+        app.delete('/delete/:id', async (req, res) => {
+
+            const fruitstore = client.db("fruitStore").collection("fruits");
+            const id = req.params.id;
+            const query = { _id: Objectid(id) };
+
+            const result = await fruitstore.deleteOne(query);
             res.send(result)
 
         })
