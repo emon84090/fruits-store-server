@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const Objectid = require('mongodb').ObjectId;
 const port = process.env.PORT || 5000;
@@ -15,6 +16,25 @@ app.get('/', (req, res) => {
     res.send('assignment 11 server is running');
 })
 
+const verifyjwt = (req, res, next) => {
+    const autheader = req.headers.authorization;
+    if (!autheader) {
+        return res.status(401).send({ message: 'unauthorize' })
+    }
+    const token = autheader.split(' ')[1];
+
+
+    jwt.verify(token, process.env.PRIVATE_KEY, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: 'forbidden access' })
+        }
+        req.decoded = decoded;
+
+        next();
+    });
+
+
+}
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.q1k3m.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
@@ -23,22 +43,31 @@ const run = async () => {
     try {
         await client.connect();
 
-        app.get('/fruits', async (req, res) => {
+        app.get('/fruits', verifyjwt, async (req, res) => {
             const fruitstore = client.db("fruitStore").collection("fruits");
+            const decodemail = req.decoded.email;
+            const queryemail = req.query.email;
+            const query = { email: queryemail };
 
-            if (req.query.email) {
-                const query = { email: req.query.email };
+            if (decodemail == queryemail) {
                 const cursor = fruitstore.find(query);
                 const result = await cursor.toArray();
                 res.send(result)
             } else {
-                const query = {};
-                const cursor = fruitstore.find(query);
-                const result = await cursor.toArray();
-                res.send(result)
+                res.status(403).send({ message: 'forbidden access' })
             }
 
 
+        })
+
+
+        app.get('/allfruits', async (req, res) => {
+            const fruitstore = client.db("fruitStore").collection("fruits");
+
+            const query = {};
+            const cursor = fruitstore.find(query);
+            const result = await cursor.toArray();
+            res.send(result)
 
         })
 
@@ -110,6 +139,17 @@ const run = async () => {
             res.send(result)
 
         })
+
+
+        app.post('/login', (req, res) => {
+            const user = req.body;
+
+            const accesstoken = jwt.sign(user, process.env.PRIVATE_KEY, {
+                expiresIn: '1d'
+            })
+            res.send({ accesstoken })
+        })
+
 
     }
     finally {
