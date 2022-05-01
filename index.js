@@ -25,10 +25,20 @@ const run = async () => {
 
         app.get('/fruits', async (req, res) => {
             const fruitstore = client.db("fruitStore").collection("fruits");
-            const query = {};
-            const cursor = fruitstore.find(query);
-            const result = await cursor.toArray();
-            res.send(result)
+
+            if (req.query.email) {
+                const query = { email: req.query.email };
+                const cursor = fruitstore.find(query);
+                const result = await cursor.toArray();
+                res.send(result)
+            } else {
+                const query = {};
+                const cursor = fruitstore.find(query);
+                const result = await cursor.toArray();
+                res.send(result)
+            }
+
+
 
         })
 
