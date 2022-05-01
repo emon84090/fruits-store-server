@@ -93,6 +93,14 @@ const run = async () => {
 
         })
 
+        app.post('/addfoods', async (req, res) => {
+            const body = req.body;
+            const fruitstore = client.db("fruitStore").collection("fruits");
+            const result = await fruitstore.insertOne(body);
+            res.send(result)
+
+        })
+
     }
     finally {
 
