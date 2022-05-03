@@ -80,12 +80,11 @@ const run = async () => {
 
         })
 
+
         app.put('/updateqty', async (req, res) => {
             const fruitstore = client.db("fruitStore").collection("fruits");
             const id = req.body.id;
-            const quantity = parseInt(req.body.qty);
-            const exist_qty = parseInt(req.body.exist_qty);
-
+            const quantity = req.body.updateqty;
 
             const filter = { _id: Objectid(id) };
 
@@ -93,7 +92,7 @@ const run = async () => {
 
             const updateDoc = {
                 $set: {
-                    qty: quantity + exist_qty
+                    qty: quantity
                 },
             };
             const result = await fruitstore.updateOne(filter, updateDoc, options);
@@ -102,24 +101,7 @@ const run = async () => {
         })
 
 
-        app.put('/decreaseqty', async (req, res) => {
-            const fruitstore = client.db("fruitStore").collection("fruits");
-            const id = req.body.id;
-            const exist_qty = parseInt(req.body.exist_qty);
 
-            const filter = { _id: Objectid(id) };
-
-            const options = { upsert: true };
-
-            const updateDoc = {
-                $set: {
-                    qty: exist_qty - 1,
-                },
-            };
-            const result = await fruitstore.updateOne(filter, updateDoc, options);
-            res.send(result)
-
-        })
 
         app.delete('/delete/:id', async (req, res) => {
 
